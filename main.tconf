@@ -68,5 +68,9 @@ global {
   # This variable supports both conda and Python's virtualenv. For conda, use "conda:ENV" as the value,
   # where "ENV" is the name of the conda environment that should be loaded. For virtualenv, supply
   # the path to the script that should be loaded.
-  pyenv="conda:sockeye"
+  pyenv="conda:fairseq"
+
+  # The tensorboard logdir
+  logdir="/exp/mgordon/transformer-coreset/logdir"
+  
 }

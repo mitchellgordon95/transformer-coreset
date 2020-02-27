@@ -1,5 +1,5 @@
 task maybe_prune_chkpt : scripts
-    :: (PruningMethod: coreset)
+    :: method=(PruningMethod: coreset)
     < model=$model@train
     > out {
     # TODO: implement coreset pruning

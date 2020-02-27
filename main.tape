@@ -1,16 +1,14 @@
 import "tapes/submitters.tape"
 import "tapes/versioners.tape"
-import "tapes/sockeye.tape"
-import "tapes/bleu.tape"
 
 ## Tasks start here
 import "tapes/data_prep.tape"
-import "tapes/teacher.tape"
+import "tapes/train.tape"
 import "tapes/pruning.tape"
 import "tapes/finetuning.tape"
 
 plan all {
-  reach teacher_bleu_dev via (Dataset: *) * (Lang: *) * (ModelSize: large)
+  reach train via (Dataset: ted) * (Lang: deen)
 }
 
 # Nuts and bolts:

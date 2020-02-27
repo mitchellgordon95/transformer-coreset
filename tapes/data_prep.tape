@@ -24,3 +24,20 @@ task bpe_data : subword_nmt
   subword-nmt apply-bpe -c $SRC_VOCAB < $tok_dev_src > $DEV_SRC
   subword-nmt apply-bpe -c $TRG_VOCAB < $tok_dev_trg > $DEV_TRG
 }
+
+task preprocess_data 
+  < train_src=$TRAIN_SRC@bpe_data
+  < train_trg=$TRAIN_TRG@bpe_data
+  < dev_src=$DEV_SRC@bpe_data
+  < dev_trg=$DEV_TRG@bpe_data
+  > prepped_data
+  :: SRC=@ TRG=@ pyenv=@ .submitter=@ .resource_flags=$resource_flags_train .action_flags=@ {
+  mkdir $prepped_data
+  ln -s $train_src train.$SRC
+  ln -s $train_trg train.$TRG
+  ln -s $dev_src dev.$SRC
+  ln -s $dev_trg dev.$TRG
+  fairseq-preprocess --source-lang $SRC --target-lang $TRG \
+    --trainpref train --validpref dev \
+    --destdir $prepped_data
+}
