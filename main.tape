@@ -7,8 +7,15 @@ import "tapes/train.tape"
 import "tapes/pruning.tape"
 import "tapes/finetuning.tape"
 
+# FF experiments (MNIST, VGG, etc.)
+import "tapes/FF.tape"
+
 plan all {
-  reach train via (Dataset: ted) * (Lang: deen)
+  reach bleu_dev via (Dataset: ted) * (Lang: deen)
+}
+
+plan FF {
+  reach eval_FF via (SparsityFF: *) * (PruneTypeFF: *)
 }
 
 # Nuts and bolts:

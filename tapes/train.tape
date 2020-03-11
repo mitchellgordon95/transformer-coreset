@@ -51,8 +51,6 @@ task train : scripts
 
     # --optimized-metric=perplexity \
 
-    # Residual connections are assumed.
-
     # Note: if you find yourself adding back in a branch for model size, consider resurrecting scripts/size_params.sh
 }
 
