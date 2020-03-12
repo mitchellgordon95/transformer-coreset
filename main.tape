@@ -15,7 +15,7 @@ plan all {
 }
 
 plan FF {
-  reach eval_FF via (SparsityFF: *) * (PruneTypeFF: *)
+  reach agg_eval_FF via (SparsityFF: *) * (PruneTypeFF: *)
 }
 
 # Nuts and bolts:

@@ -85,7 +85,9 @@ EOF
     echo "echo" >> $wrapper
     echo "echo SGE in ENV:" >> $wrapper
     echo "env | grep SGE" >> $wrapper
-    echo "nvidia-smi" >> $wrapper
+    if [[ "$resource_flags" == *"gpu"* ]] ; then
+      echo "nvidia-smi" >> $wrapper
+    fi
     echo >> $wrapper
 
     echo "$COMMANDS" >> $wrapper

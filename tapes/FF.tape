@@ -19,15 +19,30 @@ task prune_FF : scripts
   :: sparsity=(SparsityFF: 0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 0.95)
   :: prune_type=(PruneTypeFF: Coreset Uniform Top-K) {
   python $scripts/prune_lenet.py $in_model $out_model $sparsity $prune_type
+  echo $sparsity $out_model/sparsity
 }
 
 task eval_FF : scripts
   < data_dir=$data_dir@FF_data
-  < in_model=$model@prune_FF
+  < in_model=$out_model@prune_FF
+  > score
   :: pyenv=@ use_cpu=@
   :: .submitter=@ .resource_flags=$resource_flags .action_flags=@ {
+  python $scripts/score_lenet.py $in_model $data_dir > $score
+}
+
+task agg_eval_FF
+  < scores=$score@eval_FF[SparsityFF:*]
+  :: sparsities=$sparsity@prune_FF[SparsityFF:*]
+  > sparsity_vs_acc
   {
-  python $scripts/prune_lenet.py $in_model $data_dir
+  for score_f in $scores; do
+    cat $score_f | tail -n 1 | cut -d' ' -f 4 >> scores_out
+  done
+  for sparsity in $sparsities; do
+    echo $sparsity >> sparsities_out
+  done
+  paste sparsities_out scores_out > $sparsity_vs_acc
 }
 
 task finetune_FF {}
