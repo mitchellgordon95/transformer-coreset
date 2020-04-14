@@ -2,14 +2,14 @@ from coreset import compress_fc_layer
 import torch
 import fire
 
-def prune_lenet(model_dir, out_dir, sparsity: float, prune_type):
+def prune_lenet(model_dir, out_dir, sparsity: float, prune_type, beta:float):
     params = torch.load(model_dir)
     new_layer1, new_layer2, indices = compress_fc_layer(
         (params['0.weight'], params['0.bias']),
         (params['2.weight'], params['2.bias']),
         int((1 - sparsity) * 300),
         torch.nn.ReLU(),
-        1,
+        beta,
         'cpu',
         prune_type
     )
@@ -19,7 +19,7 @@ def prune_lenet(model_dir, out_dir, sparsity: float, prune_type):
         (params['4.weight'], params['4.bias']),
         int((1 - sparsity) * 100),
         torch.nn.ReLU(),
-        1,
+        beta,
         'cpu',
         prune_type
     )
