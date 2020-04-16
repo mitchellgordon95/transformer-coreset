@@ -21,7 +21,6 @@ task prune_FF : scripts
   :: sparsity=(SparsityFF: 0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 0.95)
   :: prune_type=(PruneTypeFF: Coreset Uniform Top-K) {
   python $scripts/prune_lenet.py $in_model $out_model $sparsity $prune_type $beta
-  echo $sparsity $out_model/sparsity
 }
 
 task eval_FF : scripts
