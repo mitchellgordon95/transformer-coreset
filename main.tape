@@ -11,11 +11,15 @@ import "tapes/finetuning.tape"
 import "tapes/FF.tape"
 
 plan all {
-  reach bleu_dev via (Dataset: ted) * (Lang: deen)
+  reach bleu_dev via (Dataset: ted) * (Lang: deen) * (AttentionType: *)
+}
+
+plan attention_values {
+  reach attention_values via (Dataset: ted) * (Lang: deen)
 }
 
 plan FF {
-  reach agg_eval_FF via (SparsityFF: *) * (PruneTypeFF: *)
+  reach agg_eval_FF via (SparsityFF: *) * (PruneTypeFF: *) * (TrialFF: 3) * (BetaFF: *)
 }
 
 # Nuts and bolts:
