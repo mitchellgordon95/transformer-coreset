@@ -58,14 +58,12 @@ task bleu_dev
     < in=$prepped_data@preprocess_data
     < model=$model@train
     > out
-    :: attn_type=(AttentionType: baseline taylor_approx)
     :: use_cpu=@ pyenv=@
     :: .submitter=@ :: .action_flags=@ :: .resource_flags=$resource_flags_decode {
 
     fairseq-generate $in --path $model/checkpoint_best.pt \
     --batch-size 10 \
     --gen-subset valid \
-    --model-overrides "{\"attention_type\":\"$attn_type\"}"\
     --beam 12 > out.all 
     # --max-input-len 300 \
 
