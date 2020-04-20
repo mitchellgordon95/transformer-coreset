@@ -54,24 +54,6 @@ task train : scripts
     # Note: if you find yourself adding back in a branch for model size, consider resurrecting scripts/size_params.sh
 }
 
-task bleu_dev
-    < in=$prepped_data@preprocess_data
-    < model=$model@train
-    > out
-    :: use_cpu=@ pyenv=@
-    :: .submitter=@ :: .action_flags=@ :: .resource_flags=$resource_flags_decode {
-
-    fairseq-generate $in --path $model/checkpoint_best.pt \
-    --batch-size 10 \
-    --gen-subset valid \
-    --beam 12 > out.all 
-    # --max-input-len 300 \
-
-    grep ^H out.all | cut -f3- > gen.out.sys
-    grep ^T out.all | cut -f2- > gen.out.ref
-    fairseq-score --sys gen.out.sys --ref gen.out.ref > out
-}
-
 # task attention_values
 #     < in=$prepped_data@preprocess_data
 #     < model=$model@train
