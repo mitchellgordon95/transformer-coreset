@@ -11,7 +11,8 @@ import "tapes/finetuning.tape"
 import "tapes/FF.tape"
 
 plan all {
-  reach bleu_dev_post_prune via (Dataset: ted) * (Lang: deen) * (Trial: 1) * (Sparsity: *) * (PruneType: uniform) 
+  reach agg_bleu_post_prune via (Dataset: ted) * (Lang: deen) * (Trial: 1) * (Sparsity: *) * (PruneType: uniform topk) * (PruneTypeMLP: none) 
+  reach agg_bleu_post_finetune via (Dataset: ted) * (Lang: deen) * (Trial: 1) * (Sparsity: *) * (PruneType: uniform topk) * (PruneTypeMLP: none) 
 }
 
 plan attention_values {

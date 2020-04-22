@@ -2,6 +2,8 @@ import numpy as np
 import torch
 import fire
 from prune_attn_uniform import prune_attn_uniform
+from prune_attn_topk import prune_attn_topk
+import sys
 
 
 def prune_transformer_attn(model_chkpt, out_dir, sparsity: float, method):
@@ -21,7 +23,7 @@ def prune_transformer_attn(model_chkpt, out_dir, sparsity: float, method):
 
     for layer in range(6):
         for half in ['encoder', 'decoder']:
-            print(f'layer {layer} {half}')
+            print(f'layer {layer} {half}', file=sys.stderr)
             if half == 'encoder':
                 prune_MHA(chkpt, f'{half}.layers.{layer}.self_attn', encoder_heads, encoder_head_dim, encoder_sample_size, method)
             if half == 'decoder':
@@ -32,6 +34,9 @@ def prune_transformer_attn(model_chkpt, out_dir, sparsity: float, method):
     chkpt['args'].encoder_attn_proj_dim = encoder_sample_size * encoder_heads
     chkpt['args'].decoder_attn_proj_dim = decoder_sample_size * decoder_heads
     torch.save(chkpt, out_dir)
+
+    print(encoder_sample_size * encoder_heads)
+    print(decoder_sample_size * decoder_heads)
 
 
 def prune_MHA(chkpt, prefix, attention_heads, head_dim, sample_size, method):
@@ -57,6 +62,8 @@ def prune_MHA(chkpt, prefix, attention_heads, head_dim, sample_size, method):
     # Don't forget to think about how these pair up, and how we might exploit that to speed up W_Q W_K
     if method == 'uniform':
         k_proj, q_proj, v_proj, out_proj_T = prune_attn_uniform(k_proj, q_proj, v_proj, out_proj_T, sample_size)
+    if method == 'topk':
+        k_proj, q_proj, v_proj, out_proj_T = prune_attn_topk(k_proj, q_proj, v_proj, out_proj_T, sample_size)
     else:
         raise Exception("Unknown pruning type.")
 

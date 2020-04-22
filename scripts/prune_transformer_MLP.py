@@ -32,7 +32,7 @@ def prune_transformer_MLP_uniform(model_chkpt, out_dir, sparsity: float):
                 'cpu',
                 'Uniform'
             )
-            print(f'Selected these indices for layer {layer}: {indices}')
+            print(f'Selected these indices for layer {layer}: {indices}', file=sys.stderr)
 
             chkpt['model'][f'{half}.layers.{layer}.fc1.weight'], chkpt['model'][f'{half}.layers.{layer}.fc1.bias'] = new_layer1
             chkpt['model'][f'{half}.layers.{layer}.fc2.weight'], chkpt['model'][f'{half}.layers.{layer}.fc2.bias'] = new_layer2
@@ -41,6 +41,8 @@ def prune_transformer_MLP_uniform(model_chkpt, out_dir, sparsity: float):
     chkpt['args'].decoder_ffn_embed_dim = decoder_sample_size
 
     torch.save(chkpt, out_dir)
+    print(encoder_sample_size)
+    print(decoder_sample_size)
 
 if __name__ == '__main__':
     fire.Fire(prune_transformer_MLP_uniform)
