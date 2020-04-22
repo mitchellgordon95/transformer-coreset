@@ -16,7 +16,7 @@ def FF(layer_sizes):
 
     return nn.Sequential(*layers, nn.LogSoftmax(dim=1))
 
-def train_mnist(hidden_sizes, out_dir, data_loc, epochs:int =10, lr:float =0.01, momentum:float=0.5):
+def train_mnist(hidden_sizes, out_dir, data_loc, epochs:int =10, lr:float =0.01, momentum:float=0.5, init_chkpt=None):
 
     # Define a transform to normalize the data
     # Mean and std from pytorch example
@@ -43,6 +43,10 @@ def train_mnist(hidden_sizes, out_dir, data_loc, epochs:int =10, lr:float =0.01,
     model = FF([784] + hidden_sizes + [10]).to(device)
     print()
     print(model)
+
+    if init_chkpt:
+        print(f"Loading chkpt from {init_chkpt}")
+        model.load_state_dict(torch.load(init_chkpt))
 
     criterion = nn.NLLLoss()
     images, labels = next(iter(trainloader))

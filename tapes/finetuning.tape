@@ -4,24 +4,31 @@ task finetune : scripts
     < new_attn_size=$new_attn_size@prune_attn
     < new_mlp_size=$new_mlp_size@maybe_prune_mlp
     > model
+    :: reinit_and_train=(ReinitAndTrain: no yes)
     :: model_size=@
     :: pyenv=@ use_cpu=@ logdir=@
     :: .submitter=@ .resource_flags=$resource_flags_train .action_flags=@ {
 
+  if [ $reinit_and_train == no ]; then
+     params="--restore-file $init_model 
+        --reset-optimizer 
+        --reset-dataloader 
+        --reset-meters 
+        --reset-lr-scheduler 
+        --max-epoch 1 
+        --max-update 3000 "
+  else
+     params="--max-epoch 100 --max-update 300000"
+  fi
+
   $scripts/train_ted.sh $prepped_data \
   --save-dir $model \
-  --restore-file $init_model \
   --encoder-attn-proj-dim $(head -n 1 $new_attn_size) \
   --decoder-attn-proj-dim $(tail -n 1 $new_attn_size) \
   --encoder-ffn-embed-dim $(head -n 1 $new_mlp_size) \
   --decoder-ffn-embed-dim $(tail -n 1 $new_mlp_size) \
-  --reset-optimizer \
-  --reset-dataloader \
-  --reset-meters \
-  --reset-lr-scheduler \
-  --max-epoch 1 \
-  --max-update 3000 \
-  --tensorboard-logdir $logdir
+  --tensorboard-logdir $logdir \
+  $params
 }
 
 task bleu_dev_post_finetune
