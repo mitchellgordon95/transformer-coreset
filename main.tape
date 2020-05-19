@@ -10,9 +10,13 @@ import "tapes/finetuning.tape"
 # FF experiments (MNIST, VGG, etc.)
 import "tapes/FF.tape"
 
-plan all {
-  reach agg_bleu_post_prune via (Dataset: ted) * (Lang: deen) * (Trial: 1) * (Sparsity: *) * (PruneType: uniform topk) * (PruneTypeMLP: none) 
-  reach agg_bleu_post_finetune via (Dataset: ted) * (Lang: deen) * (Trial: 1) * (Sparsity: *) * (PruneType: uniform topk) * (PruneTypeMLP: none) * (ReinitAndTrain: *) 
+plan ted {
+  reach bleu_dev_post_prune via (Dataset: ted) * (Lang: deen) * (ShareQK: yes) * (Trial: 1) * (Sparsity: *) * (PruneType: uniform topk) * (PruneTypeMLP: none) 
+  reach bleu_dev_post_finetune via (Dataset: ted) * (Lang: deen) * (ShareQK: yes) * (Trial: 1) * (Sparsity: *) * (PruneType: uniform topk) * (PruneTypeMLP: none) * (ReinitAndTrain: no) 
+}
+
+plan simple {
+  reach bleu_dev via (Dataset: ted) * (Lang: deen) * (ShareQK: simple_attn) 
 }
 
 plan from_scratch {

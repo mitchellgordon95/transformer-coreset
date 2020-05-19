@@ -4,6 +4,7 @@ task finetune : scripts
     < new_attn_size=$new_attn_size@prune_attn
     < new_mlp_size=$new_mlp_size@maybe_prune_mlp
     > model
+    :: share_qk=$share_qk@train
     :: reinit_and_train=(ReinitAndTrain: no yes)
     :: model_size=@
     :: pyenv=@ use_cpu=@ logdir=@
@@ -21,13 +22,19 @@ task finetune : scripts
      params="--max-epoch 100 --max-update 300000"
   fi
 
-  $scripts/train_ted.sh $prepped_data \
+  if [ $share_qk == "yes" ]; then
+    share_qk="--shared-qk"
+  else
+    share_qk=""
+  fi
+
+  $scripts/train_ted.sh $prepped_data $share_qk \
   --save-dir $model \
   --encoder-attn-proj-dim $(head -n 1 $new_attn_size) \
   --decoder-attn-proj-dim $(tail -n 1 $new_attn_size) \
   --encoder-ffn-embed-dim $(head -n 1 $new_mlp_size) \
   --decoder-ffn-embed-dim $(tail -n 1 $new_mlp_size) \
-  --tensorboard-logdir $logdir \
+  --tensorboard-logdir logdir \
   $params
 }
 
@@ -49,16 +56,8 @@ task bleu_dev_post_finetune
     fairseq-score --sys gen.out.sys --ref gen.out.ref > out
 }
 
-task agg_bleu_post_finetune
-  < scores=$out@bleu_dev_post_finetune[Sparsity:*]
-  :: sparsities=$sparsity@maybe_prune_mlp[Sparsity:*]
-  > sparsity_vs_bleu
-  {
-  for score_f in $scores; do
-    cat $score_f | tail -n 1 | cut -d' ' -f 3 | sed 's/.$//' >> scores_out
-  done
-  for sparsity in $sparsities; do
-    echo $sparsity >> sparsities_out
-  done
-  paste sparsities_out scores_out > $sparsity_vs_bleu
+summary post_finetune {
+  of bleu_dev_post_finetune > post_finetune {
+    cat $out | tail -n 1 | cut -d' ' -f 3 | sed 's/.$//' > $post_finetune
+  }
 }

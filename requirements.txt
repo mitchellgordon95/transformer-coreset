@@ -2,3 +2,4 @@ fire
 torch
 torchvision
 matplotlib
+pandas

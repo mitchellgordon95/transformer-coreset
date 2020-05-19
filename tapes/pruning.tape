@@ -41,16 +41,8 @@ task bleu_dev_post_prune
     fairseq-score --sys gen.out.sys --ref gen.out.ref > out
 }
 
-task agg_bleu_post_prune
-  < scores=$out@bleu_dev_post_prune[Sparsity:*]
-  :: sparsities=$sparsity@maybe_prune_mlp[Sparsity:*]
-  > sparsity_vs_bleu
-  {
-  for score_f in $scores; do
-    cat $score_f | tail -n 1 | cut -d' ' -f 3 | sed 's/.$//' >> scores_out
-  done
-  for sparsity in $sparsities; do
-    echo $sparsity >> sparsities_out
-  done
-  paste sparsities_out scores_out > $sparsity_vs_bleu
+summary post_prune {
+  of bleu_dev_post_prune > post_prune {
+    cat $out | tail -n 1 | cut -d' ' -f 3 | sed 's/.$//' > $post_prune
+  }
 }
