@@ -62,7 +62,7 @@ def prune_MHA(chkpt, prefix, attention_heads, head_dim, sample_size, method):
     # Don't forget to think about how these pair up, and how we might exploit that to speed up W_Q W_K
     if method == 'uniform':
         k_proj, q_proj, v_proj, out_proj_T = prune_attn_uniform(k_proj, q_proj, v_proj, out_proj_T, sample_size)
-    if method == 'topk':
+    elif method == 'topk':
         k_proj, q_proj, v_proj, out_proj_T = prune_attn_topk(k_proj, q_proj, v_proj, out_proj_T, sample_size)
     else:
         raise Exception("Unknown pruning type.")
