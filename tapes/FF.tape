@@ -16,11 +16,12 @@ task train_FF : scripts
 task prune_FF : scripts
   < in_model=$model@train_FF
   > out_model
+  > hidden_sizes
   :: beta=(BetaFF: 1 45)
   :: trial=(TrialFF: 1..5)
   :: sparsity=(SparsityFF: 0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 0.95)
   :: prune_type=(PruneTypeFF: Coreset Uniform Top-K) {
-  python $scripts/prune_lenet.py $in_model $out_model $sparsity $prune_type $beta
+  python $scripts/prune_lenet.py $in_model $out_model $sparsity $prune_type $beta > $hidden_sizes
 }
 
 task eval_FF : scripts
@@ -49,14 +50,15 @@ task agg_eval_FF
 task finetune_FF : scripts
   < data_dir=$data_dir@FF_data
   < init_model=$out_model@prune_FF
+  < hidden_sizes=$hidden_sizes@prune_FF
   > model
   :: sparsity=$sparsity@prune_FF
   :: lr=$lr@train_FF
   :: pyenv=@ use_cpu=@
   :: .submitter=@ .resource_flags=$resource_flags_train_FF .action_flags=@ {
   # Hyper-parameters can be adjusted, but we get decent validation acc so I'm not worried
-  neurons1=$(echo "$sparsity * 300" | bc -l)
-  neurons2=$(echo "$sparsity * 100" | bc -l)
+  neurons1=$(head -n 1 $hidden_sizes)
+  neurons2=$(tail -n 1 $hidden_sizes)
   python $scripts/lenet.py [$neurons1,$neurons2] $model $data_dir --lr=$lr --init-chkpt=$init_model
 }
 

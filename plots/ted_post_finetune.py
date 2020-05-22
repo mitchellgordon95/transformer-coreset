@@ -18,6 +18,6 @@ axes.set_ylabel("Dev BLEU")
 
 axes.plot(uniform["Sparsity"], uniform["post_finetune"], label="Uniform")
 axes.plot(topk["Sparsity"], topk["post_finetune"], label="Top-K")
-axes.set_title("TED Talks German-English Translation Post Prune")
+axes.set_title("TED Talks German-English Translation Post Finetune")
 axes.legend()
 fig.savefig(f'plots_out/sparsity_vs_acc_ted_post_finetune.png')
