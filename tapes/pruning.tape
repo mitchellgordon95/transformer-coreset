@@ -1,5 +1,5 @@
 task prune_attn : scripts
-    :: prune_type=(PruneType: uniform topk dataind_coreset datadep_coreset none)
+    :: prune_type=(PruneType: uniform topk L1 coreset randmatmul)
     :: trial=(Trial: 1..5)
     :: sparsity=(Sparsity: 0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9)
     < model=$model@train

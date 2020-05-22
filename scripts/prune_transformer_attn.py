@@ -3,6 +3,9 @@ import torch
 import fire
 from prune_attn_uniform import prune_attn_uniform
 from prune_attn_topk import prune_attn_topk
+from prune_attn_l1 import prune_attn_l1
+from prune_attn_coreset import prune_attn_coreset
+from prune_attn_randmatmul import prune_attn_randmatmul
 import sys
 
 
@@ -64,6 +67,12 @@ def prune_MHA(chkpt, prefix, attention_heads, head_dim, sample_size, method):
         k_proj, q_proj, v_proj, out_proj_T = prune_attn_uniform(k_proj, q_proj, v_proj, out_proj_T, sample_size)
     elif method == 'topk':
         k_proj, q_proj, v_proj, out_proj_T = prune_attn_topk(k_proj, q_proj, v_proj, out_proj_T, sample_size)
+    elif method == 'L1':
+        k_proj, q_proj, v_proj, out_proj_T = prune_attn_l1(k_proj, q_proj, v_proj, out_proj_T, sample_size)
+    elif method == 'coreset':
+        k_proj, q_proj, v_proj, out_proj_T = prune_attn_coreset(k_proj, q_proj, v_proj, out_proj_T, sample_size)
+    elif method == 'randmatmul':
+        k_proj, q_proj, v_proj, out_proj_T = prune_attn_randmatmul(k_proj, q_proj, v_proj, out_proj_T, sample_size)
     else:
         raise Exception("Unknown pruning type.")
 

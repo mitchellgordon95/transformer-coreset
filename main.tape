@@ -11,8 +11,8 @@ import "tapes/finetuning.tape"
 import "tapes/FF.tape"
 
 plan ted {
-  reach bleu_dev_post_prune via (Dataset: ted) * (Lang: deen) * (ShareQK: yes) * (Trial: 1) * (Sparsity: *) * (PruneType: uniform topk) * (PruneTypeMLP: none) 
-  reach bleu_dev_post_finetune via (Dataset: ted) * (Lang: deen) * (ShareQK: yes) * (Trial: 1) * (Sparsity: *) * (PruneType: uniform topk) * (PruneTypeMLP: none) * (ReinitAndTrain: no) 
+  reach bleu_dev_post_prune via (Dataset: ted) * (Lang: deen) * (ShareQK: yes) * (Trial: 1) * (Sparsity: *) * (PruneType: *) * (PruneTypeMLP: none) 
+  reach bleu_dev_post_finetune via (Dataset: ted) * (Lang: deen) * (ShareQK: yes) * (Trial: 1) * (Sparsity: *) * (PruneType: *) * (PruneTypeMLP: none) * (ReinitAndTrain: no) 
 }
 
 plan simple {
