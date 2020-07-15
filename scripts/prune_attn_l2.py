@@ -3,7 +3,7 @@ import numpy as np
 import sys
 
 
-def prune_attn_topk(k_proj, q_proj, v_proj, out_proj, sample_size):
+def prune_attn_l2(k_proj, q_proj, v_proj, out_proj, sample_size):
     heads, head_dim, embed_dim = k_proj.shape
 
     new_k_proj = torch.zeros((heads, sample_size, k_proj.shape[-1]))

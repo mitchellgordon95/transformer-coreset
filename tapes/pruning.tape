@@ -1,11 +1,13 @@
 task prune_attn : scripts
-    :: prune_type=(PruneType: uniform topk L1 coreset randmatmul)
+    :: prune_type=(PruneType: uniform L2 L1 coreset randmatmul)
     :: trial=(Trial: 1..5)
     :: sparsity=(Sparsity: 0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9)
+    :: with_replacement=(WithReplacement: False True) 
+    :: with_scaling=(WithScaling: False True)
     < model=$model@train
     > new_attn_size
     > out {
-    python $scripts/prune_transformer_attn.py $model/checkpoint_best.pt $out $sparsity $prune_type > $new_attn_size
+    python $scripts/prune_transformer_attn.py $model/checkpoint_best.pt $out $sparsity $prune_type --with_replacement=$with_replacement --with_scaling=$with_scaling > $new_attn_size
 }
 
 task maybe_prune_mlp : scripts

@@ -1,15 +1,13 @@
 task train : scripts
     < prepped_data=$prepped_data@preprocess_data
     > model
-    :: share_qk=(ShareQK: no yes simple_attn)
+    :: share_qk=(ShareQK: no yes)
     :: model_size=@
     :: pyenv=@ use_cpu=@
     :: .submitter=@ .resource_flags=$resource_flags_train .action_flags=@ {
 
   if [ $share_qk == "yes" ]; then
     share_qk="--shared-qk"
-  elif [ $share_qk == "simple_attn" ]; then
-    share_qk="--attention-type simple"
   else
     share_qk=""
   fi

@@ -3,27 +3,35 @@ import subprocess
 import pandas as pd
 from io import StringIO
 
-fig, axes = plt.subplots()
 
 ducttape = subprocess.Popen(["ducttape", "main.tape", "-C", "main.tconf", "-p", "ted", "summary", "post_prune"], stdout=subprocess.PIPE)
 tabular = subprocess.Popen(['tabular'], stdin=ducttape.stdout, stdout=subprocess.PIPE)
 csv = subprocess.check_output(["grep", "-o", "^[^#]*"], stdin=tabular.stdout).decode('ascii')
 
 table = pd.read_csv(StringIO(csv), sep="\s+")
-topk = table[table["PruneType"] == "topk"]
-uniform = table[table["PruneType"] == "uniform"]
-L1 = table[table["PruneType"] == "L1"]
-coreset = table[table["PruneType"] == "coreset"]
-randmatmul = table[table["PruneType"] == "randmatmul"]
+table['Sparsity'] = pd.to_numeric(table['Sparsity'], errors='raise')
+table['post_prune'] = pd.to_numeric(table['post_prune'], errors='coerce')
+
+fig, axes = plt.subplots()
 
 axes.set_xlabel("Sparsity")
 axes.set_ylabel("Dev BLEU")
 
-axes.plot(uniform["Sparsity"], uniform["post_prune"], label="Uniform")
-axes.plot(L1["Sparsity"], L1["post_prune"], label="L1")
-axes.plot(topk["Sparsity"], topk["post_prune"], label="L2")
-axes.plot(coreset["Sparsity"], coreset["post_prune"], label="Coreset")
-axes.plot(randmatmul["Sparsity"], randmatmul["post_prune"], label="Random Mat Mul")
+for prune_type in ["L2", "L1"]:
+    rel = table[(table["PruneType"] == prune_type)]
+    axes.plot(rel["Sparsity"], rel["post_prune"], label=prune_type)
+
+for prune_type in ["uniform", "coreset", "randmatmul"]:
+    for replacement, scaling in [(False, True)]: # [(True, False), (False, True), (False, False)]:
+
+        rel = table[(table["PruneType"] == prune_type) & (table["WithScaling"] == scaling) & (table["WithReplacement"] == replacement)]
+        label = prune_type
+        # if replacement:
+        #     label += "_replace"
+        # if scaling:
+        #     label += "_scaling"
+        axes.plot(rel["Sparsity"], rel["post_prune"], label=label)
+
 axes.set_title("TED Talks German-English Translation Post Prune")
 axes.legend()
 fig.savefig(f'plots_out/sparsity_vs_acc_ted_post_prune.png')

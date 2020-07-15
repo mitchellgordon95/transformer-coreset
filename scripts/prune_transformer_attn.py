@@ -2,14 +2,14 @@ import numpy as np
 import torch
 import fire
 from prune_attn_uniform import prune_attn_uniform
-from prune_attn_topk import prune_attn_topk
+from prune_attn_l2 import prune_attn_l2
 from prune_attn_l1 import prune_attn_l1
 from prune_attn_coreset import prune_attn_coreset
 from prune_attn_randmatmul import prune_attn_randmatmul
 import sys
 
 
-def prune_transformer_attn(model_chkpt, out_dir, sparsity: float, method):
+def prune_transformer_attn(model_chkpt, out_dir, sparsity: float, method, with_replacement=False, with_scaling=True):
     chkpt = torch.load(model_chkpt, map_location=torch.device('cpu'))
 
     encoder_dim = chkpt['args'].encoder_embed_dim
@@ -28,10 +28,10 @@ def prune_transformer_attn(model_chkpt, out_dir, sparsity: float, method):
         for half in ['encoder', 'decoder']:
             print(f'layer {layer} {half}', file=sys.stderr)
             if half == 'encoder':
-                prune_MHA(chkpt, f'{half}.layers.{layer}.self_attn', encoder_heads, encoder_head_dim, encoder_sample_size, method)
+                prune_MHA(chkpt, f'{half}.layers.{layer}.self_attn', encoder_heads, encoder_head_dim, encoder_sample_size, method, with_replacement, with_scaling)
             if half == 'decoder':
-                prune_MHA(chkpt, f'{half}.layers.{layer}.encoder_attn', decoder_heads, decoder_head_dim, decoder_sample_size, method)
-                prune_MHA(chkpt, f'{half}.layers.{layer}.self_attn', decoder_heads, decoder_head_dim, decoder_sample_size, method)
+                prune_MHA(chkpt, f'{half}.layers.{layer}.encoder_attn', decoder_heads, decoder_head_dim, decoder_sample_size, method, with_replacement, with_scaling)
+                prune_MHA(chkpt, f'{half}.layers.{layer}.self_attn', decoder_heads, decoder_head_dim, decoder_sample_size, method, with_replacement, with_scaling)
 
     # Set the internal attention projection dimension
     chkpt['args'].encoder_attn_proj_dim = encoder_sample_size * encoder_heads
@@ -42,7 +42,7 @@ def prune_transformer_attn(model_chkpt, out_dir, sparsity: float, method):
     print(decoder_sample_size * decoder_heads)
 
 
-def prune_MHA(chkpt, prefix, attention_heads, head_dim, sample_size, method):
+def prune_MHA(chkpt, prefix, attention_heads, head_dim, sample_size, method, with_replacement, with_scaling):
     # Remember, every row of a projection matrix corresponds to a dimension of the key/query/value
     # Furthermore, these rows are divided evenly among the projection heads.
     k_proj = torch.cat([
@@ -64,15 +64,15 @@ def prune_MHA(chkpt, prefix, attention_heads, head_dim, sample_size, method):
 
     # Don't forget to think about how these pair up, and how we might exploit that to speed up W_Q W_K
     if method == 'uniform':
-        k_proj, q_proj, v_proj, out_proj_T = prune_attn_uniform(k_proj, q_proj, v_proj, out_proj_T, sample_size)
-    elif method == 'topk':
-        k_proj, q_proj, v_proj, out_proj_T = prune_attn_topk(k_proj, q_proj, v_proj, out_proj_T, sample_size)
+        k_proj, q_proj, v_proj, out_proj_T = prune_attn_uniform(k_proj, q_proj, v_proj, out_proj_T, sample_size, with_replacement, with_scaling)
+    elif method == 'L2':
+        k_proj, q_proj, v_proj, out_proj_T = prune_attn_l2(k_proj, q_proj, v_proj, out_proj_T, sample_size)
     elif method == 'L1':
         k_proj, q_proj, v_proj, out_proj_T = prune_attn_l1(k_proj, q_proj, v_proj, out_proj_T, sample_size)
     elif method == 'coreset':
-        k_proj, q_proj, v_proj, out_proj_T = prune_attn_coreset(k_proj, q_proj, v_proj, out_proj_T, sample_size)
+        k_proj, q_proj, v_proj, out_proj_T = prune_attn_coreset(k_proj, q_proj, v_proj, out_proj_T, sample_size, with_replacement, with_scaling)
     elif method == 'randmatmul':
-        k_proj, q_proj, v_proj, out_proj_T = prune_attn_randmatmul(k_proj, q_proj, v_proj, out_proj_T, sample_size)
+        k_proj, q_proj, v_proj, out_proj_T = prune_attn_randmatmul(k_proj, q_proj, v_proj, out_proj_T, sample_size, with_replacement, with_scaling)
     else:
         raise Exception("Unknown pruning type.")
 
